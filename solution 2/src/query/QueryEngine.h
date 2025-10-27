@@ -1,0 +1,62 @@
+#pragma once
+
+#include <memory>
+#include "../database/DatabaseManager.h"
+#include "../query/JsonParser.h"
+#include "../query/QueryResult.h"
+
+/**
+ * Main query execution engine for Task 2
+ */
+class QueryEngine {
+private:
+    std::unique_ptr<DatabaseManager> db_manager;
+    
+public:
+    /**
+     * Initialize query engine with database connection
+     * @param connection_string PostgreSQL connection string
+     */
+    explicit QueryEngine(const std::string& connection_string);
+    
+    /**
+     * Destructor
+     */
+    ~QueryEngine();
+    
+    /**
+     * Execute a query from JSON file
+     * @param query_file Path to JSON query file
+     * @return QueryResult containing matching points
+     * @throws std::runtime_error on query execution errors
+     */
+    QueryResult executeQueryFile(const std::string& query_file);
+    
+    /**
+     * Execute a query from JSON string
+     * @param json_content JSON query string
+     * @return QueryResult containing matching points
+     * @throws std::runtime_error on query execution errors
+     */
+    QueryResult executeQueryString(const std::string& json_content);
+    
+    /**
+     * Execute a parsed query specification
+     * @param query_spec Parsed query specification
+     * @return QueryResult containing matching points
+     * @throws std::runtime_error on query execution errors
+     */
+    QueryResult executeQuery(const QuerySpec& query_spec);
+    
+    /**
+     * Test database connection
+     * @return true if connection is working
+     */
+    bool testConnection();
+    
+private:
+    /**
+     * Validate query specification before execution
+     */
+    void validateQuery(const QuerySpec& query_spec);
+};
