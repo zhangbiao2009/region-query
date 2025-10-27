@@ -11,13 +11,16 @@
 class QueryEngine {
 private:
     std::unique_ptr<DatabaseManager> db_manager;
+    bool test_mode;
+    std::vector<Point> cached_points;  // For brute force testing
     
 public:
     /**
      * Initialize query engine with database connection
      * @param connection_string PostgreSQL connection string
+     * @param test_mode If true, loads all points into memory for brute force testing
      */
-    explicit QueryEngine(const std::string& connection_string);
+    explicit QueryEngine(const std::string& connection_string, bool test_mode = false);
     
     /**
      * Destructor
@@ -47,6 +50,14 @@ public:
      * @throws std::runtime_error on query execution errors
      */
     QueryResult executeQuery(const QuerySpec& query_spec);
+    
+    /**
+     * Execute query using brute force approach for testing
+     * @param query_spec Parsed query specification
+     * @return QueryResult containing matching points
+     * @throws std::runtime_error if not in test mode or on execution errors
+     */
+    QueryResult executeQueryBruteForce(const QuerySpec& query_spec);
     
     /**
      * Test database connection

@@ -199,3 +199,27 @@ Point DatabaseManager::resultToPoint(const pqxx::row& row) {
         row["category"].as<int>()
     );
 }
+
+std::vector<Point> DatabaseManager::getAllPoints() {
+    std::vector<Point> points;
+    
+    try {
+        pqxx::work txn(*connection);
+        
+        std::string query = "SELECT id, coord_x, coord_y, group_id, category FROM inspection_region ORDER BY coord_y, coord_x";
+        pqxx::result result = txn.exec(query);
+        
+        points.reserve(result.size());
+        for (const auto& row : result) {
+            points.push_back(resultToPoint(row));
+        }
+        
+        txn.commit();
+        std::cout << "Loaded " << points.size() << " points for brute force testing" << std::endl;
+        
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Failed to load all points: " + std::string(e.what()));
+    }
+    
+    return points;
+}

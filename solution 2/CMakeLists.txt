@@ -50,3 +50,27 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
+
+# Find GTest for testing
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
+
+# Add test executable
+add_executable(test_query_engine
+    test_query_engine.cpp
+)
+
+target_link_libraries(test_query_engine 
+    query_lib 
+    ${PQXX_LIBRARIES} 
+    ${GFLAGS_LIBRARIES} 
+    nlohmann_json::nlohmann_json
+    ${GTEST_LIBRARIES}
+    pthread
+)
+
+target_compile_options(test_query_engine PRIVATE ${PQXX_CFLAGS_OTHER} ${GFLAGS_CFLAGS_OTHER})
+
+# Enable testing
+enable_testing()
+add_test(NAME QueryEngineTests COMMAND test_query_engine)

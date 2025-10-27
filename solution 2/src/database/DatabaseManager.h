@@ -64,6 +64,12 @@ public:
      */
     size_t getTableCount(const std::string& table_name);
     
+    /**
+     * Load all points from database for testing purposes
+     * @return Vector of all points in the database
+     */
+    std::vector<Point> getAllPoints();
+    
 private:
     /**
      * Build SQL query for crop operation
