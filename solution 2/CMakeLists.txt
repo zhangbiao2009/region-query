@@ -71,10 +71,42 @@ target_link_libraries(test_query_engine
 
 target_compile_options(test_query_engine PRIVATE ${PQXX_CFLAGS_OTHER} ${GFLAGS_CFLAGS_OTHER})
 
+# Add random test executable
+add_executable(test_random_queries
+    test_random_queries.cpp
+)
+
+target_link_libraries(test_random_queries 
+    query_lib 
+    ${PQXX_LIBRARIES} 
+    ${GFLAGS_LIBRARIES} 
+    nlohmann_json::nlohmann_json
+    ${GTEST_LIBRARIES}
+    pthread
+)
+
+target_compile_options(test_random_queries PRIVATE ${PQXX_CFLAGS_OTHER} ${GFLAGS_CFLAGS_OTHER})
+
 # Add custom target for running GTest
 add_custom_target(gtest
     COMMAND ./test_query_engine --gtest_print_time=1
     DEPENDS test_query_engine
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Running GTest test suite"
+)
+
+# Add custom target for running random tests (alias: gtest2)
+add_custom_target(random_test
+    COMMAND ./test_random_queries --gtest_print_time=1
+    DEPENDS test_random_queries
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Running random query test suite (data bounds auto-detected)"
+)
+
+# Add alias gtest2 for random tests
+add_custom_target(gtest2
+    COMMAND ./test_random_queries --gtest_print_time=1
+    DEPENDS test_random_queries
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Running random query test suite (gtest2 alias)"
 )

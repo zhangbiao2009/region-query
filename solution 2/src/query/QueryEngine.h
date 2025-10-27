@@ -6,6 +6,17 @@
 #include "../query/QueryResult.h"
 
 /**
+ * Structure to hold data bounds for random query generation
+ */
+struct DataBounds {
+    double min_x, max_x;
+    double min_y, max_y;
+    int min_category, max_category;
+    long long min_group_id, max_group_id;
+    size_t total_points;
+};
+
+/**
  * Main query execution engine for Task 2
  */
 class QueryEngine {
@@ -64,6 +75,13 @@ public:
      * @return true if connection is working
      */
     bool testConnection();
+    
+    /**
+     * Get data bounds from cached points (only available in test mode)
+     * @return DataBounds structure containing min/max values for all fields
+     * @throws std::runtime_error if not in test mode or no data loaded
+     */
+    DataBounds getDataBounds() const;
     
 private:
     /**

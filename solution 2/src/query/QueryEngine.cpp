@@ -177,6 +177,40 @@ QueryResult QueryEngine::executeQueryBruteForce(const QuerySpec& query_spec) {
     return result;
 }
 
+DataBounds QueryEngine::getDataBounds() const {
+    if (!test_mode) {
+        throw std::runtime_error("getDataBounds() is only available in test mode");
+    }
+    
+    if (cached_points.empty()) {
+        throw std::runtime_error("No data loaded - cannot determine bounds");
+    }
+    
+    DataBounds bounds;
+    bounds.total_points = cached_points.size();
+    
+    // Initialize with first point
+    const auto& first_point = cached_points[0];
+    bounds.min_x = bounds.max_x = first_point.x;
+    bounds.min_y = bounds.max_y = first_point.y;
+    bounds.min_category = bounds.max_category = first_point.category;
+    bounds.min_group_id = bounds.max_group_id = first_point.group_id;
+    
+    // Find bounds across all points
+    for (const auto& point : cached_points) {
+        bounds.min_x = std::min(bounds.min_x, point.x);
+        bounds.max_x = std::max(bounds.max_x, point.x);
+        bounds.min_y = std::min(bounds.min_y, point.y);
+        bounds.max_y = std::max(bounds.max_y, point.y);
+        bounds.min_category = std::min(bounds.min_category, point.category);
+        bounds.max_category = std::max(bounds.max_category, point.category);
+        bounds.min_group_id = std::min(bounds.min_group_id, point.group_id);
+        bounds.max_group_id = std::max(bounds.max_group_id, point.group_id);
+    }
+    
+    return bounds;
+}
+
 void QueryEngine::validateQuery(const QuerySpec& query_spec) {
     // Validate valid region
     if (!query_spec.valid_region.isValid()) {
