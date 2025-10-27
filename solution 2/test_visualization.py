@@ -412,7 +412,7 @@ class QueryTester:
             },
             {
                 "name": "Test 5: Improper Groups Only",
-                "valid_region": Rectangle(200, 200, 800, 800),
+                "valid_region": Rectangle(100, 10, 900, 950),
                 "crop_region": Rectangle(0, 0, 1000, 1000),
                 "category": None,
                 "groups": None,
