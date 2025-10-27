@@ -41,21 +41,36 @@ std::vector<Point> DatabaseManager::executeCropQuery(
     const Rectangle& valid_region,
     const std::vector<int>& category_filter,
     const std::vector<long long>& group_filter,
-    bool proper_only
+    const std::optional<bool>& proper_constraint
 ) {
-    std::vector<long long> proper_groups;
+    std::vector<long long> constraint_groups;
     
-    // Get proper groups if needed
-    if (proper_only) {
-        proper_groups = getProperGroups(valid_region);
-        if (proper_groups.empty()) {
-            // No proper groups found, return empty result
-            return {};
+    // Handle proper constraint if specified
+    if (proper_constraint.has_value()) {
+        // Only use valid_region when proper constraint is specified
+        std::vector<long long> proper_groups = getProperGroups(valid_region);
+        
+        if (proper_constraint.value()) {
+            // proper: true - only proper groups
+            constraint_groups = proper_groups;
+            if (constraint_groups.empty()) {
+                // No proper groups found, return empty result
+                return {};
+            }
+        } else {
+            // proper: false - only improper groups
+            // Get all groups and subtract proper groups
+            constraint_groups = getImproperGroups(valid_region, proper_groups);
+            if (constraint_groups.empty()) {
+                // No improper groups found, return empty result
+                return {};
+            }
         }
     }
+    // When proper_constraint is nullopt, constraint_groups remains empty and is ignored
     
     // Build and execute query
-    std::string query = buildCropQuery(crop_region, category_filter, group_filter, proper_groups);
+    std::string query = buildCropQuery(crop_region, category_filter, group_filter, constraint_groups);
     
     try {
         pqxx::work txn(*connection);
@@ -108,6 +123,37 @@ std::vector<long long> DatabaseManager::getProperGroups(const Rectangle& valid_r
         
     } catch (const std::exception& e) {
         throw std::runtime_error("Proper groups query failed: " + std::string(e.what()));
+    }
+}
+
+std::vector<long long> DatabaseManager::getImproperGroups(const Rectangle& valid_region, const std::vector<long long>& proper_groups) {
+    try {
+        pqxx::work txn(*connection);
+        
+        // Find all unique groups, then subtract proper groups
+        std::string query = "SELECT DISTINCT group_id FROM inspection_region";
+        pqxx::result result = txn.exec(query);
+        txn.commit();
+        
+        std::vector<long long> all_groups;
+        all_groups.reserve(result.size());
+        
+        for (const auto& row : result) {
+            all_groups.push_back(row[0].as<long long>());
+        }
+        
+        // Remove proper groups to get improper groups
+        std::vector<long long> improper_groups;
+        for (long long group_id : all_groups) {
+            if (std::find(proper_groups.begin(), proper_groups.end(), group_id) == proper_groups.end()) {
+                improper_groups.push_back(group_id);
+            }
+        }
+        
+        return improper_groups;
+        
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Improper groups query failed: " + std::string(e.what()));
     }
 }
 

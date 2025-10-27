@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 #include <nlohmann/json.hpp>
 #include "../geometry/Rectangle.h"
 
@@ -12,7 +13,7 @@ struct CropQuery {
     Rectangle region;                    // Required crop region
     std::vector<int> category_filter;    // Optional category filter
     std::vector<long long> group_filter; // Optional one_of_groups filter
-    bool proper_only = false;            // Optional proper flag
+    std::optional<bool> proper;          // Optional proper flag: true=proper, false=improper, nullopt=ignore
     
     CropQuery() = default;
     CropQuery(const Rectangle& r) : region(r) {}

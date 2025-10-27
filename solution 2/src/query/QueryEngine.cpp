@@ -51,8 +51,8 @@ QueryResult QueryEngine::executeQuery(const QuerySpec& query_spec) {
         std::cout << std::endl;
     }
     
-    if (query_spec.crop_query.proper_only) {
-        std::cout << "Proper groups only: true" << std::endl;
+    if (query_spec.crop_query.proper.has_value()) {
+        std::cout << "Proper constraint: " << (query_spec.crop_query.proper.value() ? "true (proper groups only)" : "false (improper groups only)") << std::endl;
     }
     
     // Record start time for query execution
@@ -64,7 +64,7 @@ QueryResult QueryEngine::executeQuery(const QuerySpec& query_spec) {
         query_spec.valid_region,
         query_spec.crop_query.category_filter,
         query_spec.crop_query.group_filter,
-        query_spec.crop_query.proper_only
+        query_spec.crop_query.proper
     );
     
     // Calculate query execution time
@@ -95,9 +95,10 @@ QueryResult QueryEngine::executeQueryBruteForce(const QuerySpec& query_spec) {
     
     std::vector<Point> result_points;
     
-    // Step 1: Find proper groups if needed
+    // Step 1: Find proper groups if proper constraint is specified
     std::set<long long> proper_groups;
-    if (query_spec.crop_query.proper_only) {
+    if (query_spec.crop_query.proper.has_value()) {
+        // Only analyze groups when proper constraint is specified
         std::map<long long, std::vector<Point>> groups_map;
         
         // Group points by group_id
@@ -119,8 +120,13 @@ QueryResult QueryEngine::executeQueryBruteForce(const QuerySpec& query_spec) {
             }
         }
         
-        std::cout << "Found " << proper_groups.size() << " proper groups within valid region" << std::endl;
+        if (query_spec.crop_query.proper.value()) {
+            std::cout << "Found " << proper_groups.size() << " proper groups within valid region" << std::endl;
+        } else {
+            std::cout << "Found " << (groups_map.size() - proper_groups.size()) << " improper groups within valid region" << std::endl;
+        }
     }
+    // When proper is nullopt, proper_groups remains empty and valid_region is ignored for group logic
     
     // Step 2: Filter points
     for (const auto& point : cached_points) {
@@ -153,10 +159,20 @@ QueryResult QueryEngine::executeQueryBruteForce(const QuerySpec& query_spec) {
             if (!group_match) continue;
         }
         
-        // Check proper groups filter
-        if (query_spec.crop_query.proper_only) {
-            if (proper_groups.find(point.group_id) == proper_groups.end()) {
-                continue;
+        // Check proper constraint
+        if (query_spec.crop_query.proper.has_value()) {
+            bool is_proper_group = (proper_groups.find(point.group_id) != proper_groups.end());
+            
+            if (query_spec.crop_query.proper.value()) {
+                // proper: true - only proper groups
+                if (!is_proper_group) {
+                    continue;
+                }
+            } else {
+                // proper: false - only improper groups
+                if (is_proper_group) {
+                    continue;
+                }
             }
         }
         

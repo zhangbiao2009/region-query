@@ -173,9 +173,9 @@ protected:
         auto category_filter = generateRandomCategoryFilter();
         auto group_filter = generateRandomGroupFilter();
         
-        // Random proper flag
-        std::uniform_int_distribution<int> proper_dist(0, 1);
-        bool proper = proper_dist(rng) == 1;
+        // Random proper flag (sometimes omitted)
+        std::uniform_int_distribution<int> proper_dist(0, 2); // 0=omit, 1=false, 2=true
+        int proper_choice = proper_dist(rng);
         
         // Build JSON
         std::ostringstream json;
@@ -206,8 +206,10 @@ protected:
             json << "]";
         }
         
-        // Add proper flag
-        json << ", \"proper\": " << (proper ? "true" : "false");
+        // Add proper flag if not omitted
+        if (proper_choice != 0) {
+            json << ", \"proper\": " << (proper_choice == 2 ? "true" : "false");
+        }
         
         json << "}}}";
         

@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <optional>
 #include <pqxx/pqxx>
 #include "../geometry/Point.h"
 #include "../geometry/Rectangle.h"
@@ -39,7 +40,7 @@ public:
      * @param valid_region Rectangle defining valid bounds for proper groups
      * @param category_filter Optional category ID filter (empty if no filter)
      * @param group_filter Optional list of group IDs to include (empty if no filter)
-     * @param proper_only If true, only include points from groups entirely within valid_region
+     * @param proper_constraint Optional proper flag: true=proper groups, false=improper groups, nullopt=ignore
      * @return Vector of points matching all criteria, sorted by (y, x)
      */
     std::vector<Point> executeCropQuery(
@@ -47,15 +48,23 @@ public:
         const Rectangle& valid_region,
         const std::vector<int>& category_filter = {},
         const std::vector<long long>& group_filter = {},
-        bool proper_only = false
+        const std::optional<bool>& proper_constraint = std::nullopt
     );
     
     /**
      * Get all groups that are entirely within the valid region
      * @param valid_region Rectangle defining valid bounds
-     * @return Vector of group IDs that have all points within valid_region
+     * @return Vector of group IDs that are proper (all points in valid region)
      */
     std::vector<long long> getProperGroups(const Rectangle& valid_region);
+    
+    /**
+     * Get all groups that have at least one point outside the valid region
+     * @param valid_region Rectangle defining valid bounds
+     * @param proper_groups Vector of proper group IDs (optimization to avoid recomputation)
+     * @return Vector of group IDs that are improper (at least one point outside valid region)
+     */
+    std::vector<long long> getImproperGroups(const Rectangle& valid_region, const std::vector<long long>& proper_groups);
     
     /**
      * Get count of records in a table for validation

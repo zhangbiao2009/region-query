@@ -94,7 +94,7 @@ CropQuery JsonParser::parseCropQuery(const nlohmann::json& json_crop) {
     
     // Parse optional proper flag
     if (json_crop.contains("proper")) {
-        crop_query.proper_only = json_crop["proper"].get<bool>();
+        crop_query.proper = json_crop["proper"].get<bool>();
     }
     
     return crop_query;

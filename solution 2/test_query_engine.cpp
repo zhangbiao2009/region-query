@@ -142,6 +142,26 @@ TEST_F(QueryEngineTest, ProperGroupsQuery) {
     testQuery("Proper Groups Query", query_json);
 }
 
+TEST_F(QueryEngineTest, ImproperGroupsQuery) {
+    std::string query_json = R"({
+        "valid_region": {
+            "p_min": {"x": 100, "y": 100},
+            "p_max": {"x": 1100, "y": 1000}
+        },
+        "query": {
+            "operator_crop": {
+                "region": {
+                    "p_min": {"x": 200, "y": 200},
+                    "p_max": {"x": 1000, "y": 980}
+                },
+                "proper": false
+            }
+        }
+    })";
+    
+    testQuery("Improper Groups Query", query_json);
+}
+
 TEST_F(QueryEngineTest, ComplexQuery) {
     std::string query_json = R"({
         "valid_region": {
