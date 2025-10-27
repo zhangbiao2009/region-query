@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: inspection_postgres
+    environment:
+      POSTGRES_DB: inspection_db
+      POSTGRES_USER: inspection_user
+      POSTGRES_PASSWORD: inspection_pass
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      # Persist data across container restarts
+      - postgres_data:/var/lib/postgresql/data
+      # Initialize with schema creation
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      # Mount schema files for manual execution
+      - ./schema.sql:/schema.sql:ro
+      - ./clear_data.sql:/clear_data.sql:ro
+      - ./verify_schema.sql:/verify_schema.sql:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inspection_user -d inspection_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
