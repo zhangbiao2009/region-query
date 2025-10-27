@@ -71,6 +71,10 @@ target_link_libraries(test_query_engine
 
 target_compile_options(test_query_engine PRIVATE ${PQXX_CFLAGS_OTHER} ${GFLAGS_CFLAGS_OTHER})
 
-# Enable testing
-enable_testing()
-add_test(NAME QueryEngineTests COMMAND test_query_engine)
+# Add custom target for running GTest
+add_custom_target(gtest
+    COMMAND ./test_query_engine --gtest_print_time=1
+    DEPENDS test_query_engine
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Running GTest test suite"
+)
