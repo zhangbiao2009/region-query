@@ -223,6 +223,25 @@ TEST_F(QueryEngineTest, MultipleFiltersQuery) {
     testQuery("Multiple Filters Query", query_json);
 }
 
+TEST_F(QueryEngineTest, SmallValidRegionVsLargeCrop) {
+    std::string query_json = R"({
+        "valid_region": {
+            "p_min": {"x": 400, "y": 400},
+            "p_max": {"x": 600, "y": 600}
+        },
+        "query": {
+            "operator_crop": {
+                "region": {
+                    "p_min": {"x": 0, "y": 0},
+                    "p_max": {"x": 1200, "y": 1200}
+                }
+            }
+        }
+    })";
+    
+    testQuery("Small Valid Region vs Large Crop", query_json);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
