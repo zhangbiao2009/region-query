@@ -21,11 +21,6 @@ cmake .. && make
 ./data_loader --data_directory=../../data/0
 ```
 
-### 4. Quick Test (All in One)
-```bash
-./docker-db.sh build-and-test
-```
-
 ## How It Works
 1. **Read Files**: Loads points.txt, categories.txt, and groups.txt from data directory
 2. **Database Setup**: Creates tables and indexes in PostgreSQL using Docker
